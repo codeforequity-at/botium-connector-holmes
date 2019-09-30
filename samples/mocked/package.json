@@ -1,0 +1,24 @@
+{
+  "name": "holmes-mocked-sample",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha spec",
+    "mock": "node MockApi/index.js"
+  },
+  "botium": {
+    "convodirs": [
+      "spec/convo"
+    ],
+    "expandConvos": true,
+    "expandUtterancesToConvos": false
+  },
+  "devDependencies": {
+    "botium-bindings": "latest",
+    "botium-connector-holmes": "../../",
+    "mocha": "latest"
+  },
+  "dependencies": {
+    "express": "^4.17.0",
+    "lodash": "^4.17.11"
+  }
+}

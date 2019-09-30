@@ -1,0 +1,22 @@
+{
+  "name": "holmes-real-sample",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha spec"
+  },
+  "botium": {
+    "convodirs": [
+      "spec/convo"
+    ],
+    "expandConvos": true,
+    "expandUtterancesToConvos": false
+  },
+  "devDependencies": {
+    "botium-bindings": "latest",
+    "botium-connector-holmes": "../../",
+    "mocha": "latest"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11"
+  }
+}
