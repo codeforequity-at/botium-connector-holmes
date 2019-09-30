@@ -1,7 +1,5 @@
 # Botium Connector for Wipro Holmes
 
-????
-
 [![NPM](https://nodei.co/npm/botium-connector-holmes.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/botium-connector-holmes/)
 
 [![Codeship Status for codeforequity-at/botium-connector-holmes](https://app.codeship.com/projects/2bb81a70-c59f-0137-b318-6afa87cdc716/status?branch=master)](https://app.codeship.com/projects/366879)
