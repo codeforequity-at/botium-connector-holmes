@@ -1,0 +1,13 @@
+{
+  "botium": {
+    "Capabilities": {
+      "PROJECTNAME": "Botium Project Holmes",
+      "CONTAINERMODE": "holmes",
+      "HOLMES_URL": "http://localhost:3568",
+      "HOLMES_SERVICE_URL": "http://localhost:3001",
+      "HOLMES_USER": "userxxx",
+      "HOLMES_USER_ID": "{{#fnc.random}}5{{/fnc.random}}",
+      "HOLMES_CHANNEL": "{\"id\": \"2\",\"type\": \"web\",\"lang\": \"en\"}"
+    }
+  }
+}

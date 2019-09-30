@@ -1,0 +1,13 @@
+{
+  "botium": {
+    "Capabilities": {
+      "PROJECTNAME": "Botium Project Holmes",
+      "CONTAINERMODE": "holmes",
+      "HOLMES_URL": "https://azure-chatbot-cb.wipro.com/chat/holmes/chatbot/v3/3/api",
+      "HOLMES_SERVICE_URL": "http://localhost:3001",
+      "HOLMES_USER": "Test User",
+      "HOLMES_USER_ID": "TestUserId",
+      "HOLMES_CHANNEL": "{\"id\": \"2\",\"type\": \"web\",\"lang\": \"en\"}"
+    }
+  }
+}
