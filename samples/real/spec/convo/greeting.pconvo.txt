@@ -1,0 +1,8 @@
+greeting
+
+#me
+Hi
+
+#bot
+Hi Test User, I am an automated service assistant. Here are some of the things I can help you with. Please click an option or type in your concern directly below.
+BUTTONS Ask a Question|Resolve Issue|Order IT Asset|Incident Management|Employee Wellness

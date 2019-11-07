@@ -15,8 +15,5 @@
     "botium-bindings": "latest",
     "botium-connector-holmes": "../../",
     "mocha": "latest"
-  },
-  "dependencies": {
-    "lodash": "^4.17.11"
   }
 }

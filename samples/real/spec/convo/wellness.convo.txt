@@ -1,0 +1,11 @@
+Employee Wellness
+
+#begin
+INCLUDE greeting
+
+#me
+Employee Wellness
+
+#bot
+CARDS How are you feeling today?|Great|Fine|Tired
+BUTTONS Great|Fine|Tired

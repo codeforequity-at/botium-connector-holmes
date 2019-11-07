@@ -1,0 +1,32 @@
+Outlook
+
+#begin
+INCLUDE greeting
+
+#me
+BUTTON Ask a Question
+
+#bot
+I can assist you with information on following topics. Please select one of them.
+BUTTONS Outlook|WebEx|Voip|Skype|None of These
+
+#me
+Outlook
+
+#bot
+CARDS Below are the Frequently Asked questions on Outlook. Please select one of them or type your query below.
+BUTTONS Ask
+
+#me
+How to set Out of Office mail in Outlook?
+
+#bot
+I can help you with that. Just follow the below steps* Is this information helpful for you
+BUTTONS Yes|No
+
+#me
+Yes
+
+#bot
+Thank you Test User. Have a great day.
+BUTTONS I have another question|I Am done
