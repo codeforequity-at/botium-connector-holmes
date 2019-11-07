@@ -33,7 +33,7 @@ class BotiumConnectorHolmes {
     Object.assign(this.caps, Defaults)
 
     if (!this.caps[Capabilities.HOLMES_URL]) throw new Error('HOLMES_URL capability required')
-    const holmesURL = url.parse(this.caps[Capabilities.HOLMES_URL])
+    const holmesURL = new url.URL(this.caps[Capabilities.HOLMES_URL])
 
     if (!this.delegateContainer) {
       this.delegateCaps = {
@@ -75,17 +75,17 @@ class BotiumConnectorHolmes {
               intents: []
             }
             for (const intent of Object.keys(botMsg.sourceData.trace.intent)) {
-              botMsg.nlp.intent.intents.push({ name: intent, confidence: botMsg.sourceData.trace.intent[intent]})
+              botMsg.nlp.intent.intents.push({ name: intent, confidence: botMsg.sourceData.trace.intent[intent] })
             }
             if (botMsg.nlp.intent.intents.length > 0) {
               Object.assign(botMsg.nlp.intent, _.maxBy(botMsg.nlp.intent.intents, i => i.confidence))
             }
           }
-          
+
           const mapButton = (b) => ({
             text: _.isString(b) ? b : b.title || b.text || b.label,
             payload: !_.isString(b) && JSON.stringify(b.value || b.url || b.data),
-            imageUri: !_.isString(b) && b.image || b.iconUrl
+            imageUri: !_.isString(b) && (b.image || b.iconUrl)
           })
           const mapImage = (i) => ({
             mediaUri: i.url,
@@ -101,9 +101,9 @@ class BotiumConnectorHolmes {
             text: c.title,
             content: c.description,
             media: c.image_url && mapMedia(c.image_url),
-            buttons: c.button && [ mapButton(c.button) ]
+            buttons: c.button && [mapButton(c.button)]
           })
-          
+
           const mapAdaptiveCard = (a) => {
             const textBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type === 'TextBlock')
             const imageBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type === 'Image')
@@ -116,7 +116,7 @@ class BotiumConnectorHolmes {
               buttons: ((a.content.actions && a.content.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || [])
             }
           }
-          
+
           botMsg.buttons = botMsg.buttons || []
           botMsg.media = botMsg.media || []
           botMsg.cards = botMsg.cards || []
@@ -156,8 +156,8 @@ class BotiumConnectorHolmes {
               }
             }
           }
-        }       
-     
+        }
+
       }
       debug(`Validate delegateCaps ${util.inspect(this.delegateCaps)}`)
       this.delegateContainer = new SimpleRestContainer({ queueBotSays: this.queueBotSays, caps: this.delegateCaps })
