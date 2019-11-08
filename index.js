@@ -57,18 +57,33 @@ class BotiumConnectorHolmes {
               "type": "text",
               "text": "{{msg.messageText}}",
               "message_id":  "{{botium.stepId}}",
-              {{#msg.forms}}
-                "{{name}}": "{{value}}",
-              {{/msg.forms}}              
               "attachments": [
               ]
             },
             "vars": {
             }           
           }`,
-        [Capabilities.SIMPLEREST_REQUEST_HOOK]: () => {},
+        [CoreCapabilities.SIMPLEREST_REQUEST_HOOK]: ({ requestOptions, msg, context }) => {
+          if (msg.buttons && msg.buttons.length > 0) {
+            const payload = msg.buttons[0].payload || msg.buttons[0].text
+            if (_.isObject(payload)) {
+              requestOptions.body.content.text = JSON.stringify(payload)
+            } else {
+              requestOptions.body.content.text = payload
+            }
+          } else if (msg.forms && msg.forms.length > 0) {
+            const content = {}
+            for (const f of msg.forms) {
+              content[f.name] = f.value
+            }
+            requestOptions.body.content.text = JSON.stringify(content)
+          }
+          debug(`Request Body: ${JSON.stringify(requestOptions.body)}`)
+        },
         [CoreCapabilities.SIMPLEREST_RESPONSE_JSONPATH]: '$.text',
         [CoreCapabilities.SIMPLEREST_RESPONSE_HOOK]: ({ botMsg }) => {
+          debug(`Response Body: ${JSON.stringify(botMsg.sourceData)}`)
+
           botMsg.nlp = { }
           if (botMsg.sourceData.trace && botMsg.sourceData.trace.intent && Object.keys(botMsg.sourceData.trace.intent).length > 0) {
             botMsg.nlp.intent = {
@@ -104,17 +119,27 @@ class BotiumConnectorHolmes {
             buttons: c.button && [mapButton(c.button)]
           })
 
-          const mapAdaptiveCard = (a) => {
-            const textBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type === 'TextBlock')
-            const imageBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type === 'Image')
-            const buttonBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type.startsWith('Action.'))
-            const choiceBlocks = this._deepFilter(a.content.body, (t) => t.type, (t) => t.type === 'Input.ChoiceSet')
+          const mapAdaptiveCard = (a, title) => {
+            const textBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'TextBlock')
+            const imageBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'Image')
+            const buttonBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type.startsWith('Action.'))
+            const choiceBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'Input.ChoiceSet')
 
-            return {
-              text: ((textBlocks && textBlocks.map(t => t.text)) || []).concat((choiceBlocks && choiceBlocks.reduce((agg, cb) => agg.concat(cb.choices.map(c => c.title)), [])) || []),
+            let cards = [{
+              text: title,
+              content: ((textBlocks && textBlocks.map(t => t.text)) || []).concat((choiceBlocks && choiceBlocks.reduce((agg, cb) => agg.concat(cb.choices.map(c => c.title)), [])) || []),
               image: imageBlocks && imageBlocks.length > 0 && mapImage(imageBlocks[0]),
-              buttons: ((a.content.actions && a.content.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || [])
+              buttons: ((a.actions && a.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || []),
+              media: imageBlocks && imageBlocks.length > 1 && imageBlocks.slice(1).map(i => mapImage(i))
+            }]
+
+            if (a.actions) {
+              const bCards = a.actions.filter(a => a.type === 'Action.ShowCard' && a.card)
+              for (const bCard of bCards) {
+                cards = cards.concat(mapAdaptiveCard(bCard.card, bCard.title))
+              }
             }
+            return cards
           }
 
           botMsg.buttons = botMsg.buttons || []
@@ -138,13 +163,13 @@ class BotiumConnectorHolmes {
                 }
               }
               if (attachment.type === 'AdaptiveCard') {
-                botMsg.cards.push(mapAdaptiveCard(attachment.data[0]))
+                botMsg.cards = botMsg.cards.concat(mapAdaptiveCard(attachment.data[0].content))
               }
               if (attachment.type === 'carousel') {
                 if (attachment.data && attachment.data.length > 0) {
                   for (const d of attachment.data) {
                     if (d.contentType === 'application/vnd.microsoft.card.adaptive') {
-                      botMsg.cards.push(mapAdaptiveCard(d))
+                      botMsg.cards = botMsg.cards.concat(mapAdaptiveCard(d.content))
                     }
                   }
                 }
@@ -157,7 +182,6 @@ class BotiumConnectorHolmes {
             }
           }
         }
-
       }
       debug(`Validate delegateCaps ${util.inspect(this.delegateCaps)}`)
       this.delegateContainer = new SimpleRestContainer({ queueBotSays: this.queueBotSays, caps: this.delegateCaps })

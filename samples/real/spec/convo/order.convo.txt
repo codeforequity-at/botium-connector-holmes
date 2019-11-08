@@ -1,0 +1,44 @@
+Order Assistant
+
+#begin
+INCLUDE greeting
+
+#me
+BUTTON Order IT Asset
+
+#bot
+CARDS Ok, Now please select a category.
+BUTTONS Laptop|Software|Accessories
+
+#me
+BUTTON {'category':'laptop'}
+
+#bot
+CARDS Apple MacBook Air Core i5 8th Gen
+
+#me
+BUTTON {'laptop': 'MacBook1'}
+
+#bot
+CARDS Select your department.|Can you specify a date on which you would like to have it to be delivered?
+
+#me
+FORM CompactSelectVal|Holmes Platform
+FORM DeliveryDate|2019-10-31
+
+#bot
+CARDS Apple MacBook Air Core i5 8th Gen|Delivery Date: 2019-10-31
+BUTTONS CONFIRM
+
+#me
+BUTTON {'data':'confirmed'}
+
+#bot
+Ok, Your order is now successfully placed.
+CARDS Please rate your experience.
+
+#me
+FORM suggestions|good
+
+#bot
+Thank you, Have a great day.
