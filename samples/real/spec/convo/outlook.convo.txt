@@ -28,5 +28,5 @@ BUTTONS Yes|No
 Yes
 
 #bot
-Thank you Test User. Have a great day.
+Thank you *. Have a great day.
 BUTTONS I have another question|I Am done
