@@ -99,8 +99,8 @@ class BotiumConnectorHolmes {
 
           const mapButton = (b) => ({
             text: _.isString(b) ? b : b.title || b.text || b.label,
-            payload: !_.isString(b) && JSON.stringify(b.value || b.url || b.data),
-            imageUri: !_.isString(b) && (b.image || b.iconUrl)
+            payload: !_.isString(b) ? JSON.stringify(b.value || b.url || b.data) : null,
+            imageUri: !_.isString(b) ? (b.image || b.iconUrl) : null
           })
           const mapImage = (i) => ({
             mediaUri: i.url,
@@ -110,13 +110,13 @@ class BotiumConnectorHolmes {
           const mapMedia = (m) => ({
             mediaUri: _.isString(m) ? m : m.url,
             mimeType: (_.isString(m) ? mime.lookup(m) : mime.lookup(m.url)) || 'application/unknown',
-            altText: !_.isString(m) && m.profile
+            altText: !_.isString(m) ? m.profile : false
           })
           const mapCard = (c) => ({
             text: c.title,
-            content: c.description,
-            media: c.image_url && mapMedia(c.image_url),
-            buttons: c.button && [mapButton(c.button)]
+            content: c.content || c.description,
+            media: c.image_url ? mapMedia(c.image_url) : null,
+            buttons: c.button ? [mapButton(c.button)] : null
           })
 
           const mapAdaptiveCard = (a, title) => {
@@ -173,6 +173,13 @@ class BotiumConnectorHolmes {
                     }
                   }
                 }
+                if (attachment.elements && attachment.elements.length > 0) {
+                  for (const e of attachment.elements) {
+                    botMsg.cards.push(mapCard(e))
+                  }
+                }
+              }
+              if (attachment.type === 'stepper') {
                 if (attachment.elements && attachment.elements.length > 0) {
                   for (const e of attachment.elements) {
                     botMsg.cards.push(mapCard(e))
