@@ -89,11 +89,14 @@ class BotiumConnectorHolmes {
             botMsg.nlp.intent = {
               intents: []
             }
-            for (const intent of Object.keys(botMsg.sourceData.trace.intent)) {
-              botMsg.nlp.intent.intents.push({ name: intent, confidence: botMsg.sourceData.trace.intent[intent] })
-            }
-            if (botMsg.nlp.intent.intents.length > 0) {
-              Object.assign(botMsg.nlp.intent, _.maxBy(botMsg.nlp.intent.intents, i => i.confidence))
+            const sortedIntents = _.orderBy(Object.keys(botMsg.sourceData.trace.intent).map(intent => ({
+              name: intent,
+              confidence: botMsg.sourceData.trace.intent[intent]
+            })), ['confidence'], ['desc'])
+
+            Object.assign(botMsg.nlp.intent, sortedIntents[0])
+            if (sortedIntents.length > 1) {
+              botMsg.nlp.intent.intents = sortedIntents.slice(1)
             }
           }
 
