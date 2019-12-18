@@ -45,18 +45,18 @@ class BotiumConnectorHolmes {
         [CoreCapabilities.SIMPLEREST_BODY_TEMPLATE]:
           `{
             "type": "direct",
-            "timestamp": "{{fnc.date_ISO}} {{fnc.time_ISO}}",
+            "timestamp": "{{{fnc.date_ISO}}} {{{fnc.time_ISO}}}",
             "service_url": "${this.caps[Capabilities.HOLMES_SERVICE_URL] || this.caps[Capabilities.HOLMES_URL]}",
             "channel": ${_.isString(this.caps[Capabilities.HOLMES_CHANNEL]) ? this.caps[Capabilities.HOLMES_CHANNEL] : JSON.stringify(this.caps[Capabilities.HOLMES_CHANNEL])},
             "user": {
               "name": "${this.caps[Capabilities.HOLMES_USER] || 'user'}",
               "id": "${this.caps[Capabilities.HOLMES_USER_ID] || 'user@wipro.com'}",
-              "session_id": "{{botium.conversationId}}"
+              "session_id": "{{{botium.conversationId}}}"
             },
             "content": {
               "type": "text",
-              "text": "{{msg.messageText}}",
-              "message_id":  "{{botium.stepId}}",
+              "text": "{{{msg.messageText}}}",
+              "message_id":  "{{{botium.stepId}}}",
               "attachments": [
               ]
             },
