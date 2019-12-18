@@ -45,18 +45,18 @@ class BotiumConnectorHolmes {
         [CoreCapabilities.SIMPLEREST_BODY_TEMPLATE]:
           `{
             "type": "direct",
-            "timestamp": "{{{fnc.date_ISO}}} {{{fnc.time_ISO}}}",
+            "timestamp": "{{fnc.date_ISO}} {{fnc.time_ISO}}",
             "service_url": "${this.caps[Capabilities.HOLMES_SERVICE_URL] || this.caps[Capabilities.HOLMES_URL]}",
             "channel": ${_.isString(this.caps[Capabilities.HOLMES_CHANNEL]) ? this.caps[Capabilities.HOLMES_CHANNEL] : JSON.stringify(this.caps[Capabilities.HOLMES_CHANNEL])},
             "user": {
               "name": "${this.caps[Capabilities.HOLMES_USER] || 'user'}",
               "id": "${this.caps[Capabilities.HOLMES_USER_ID] || 'user@wipro.com'}",
-              "session_id": "{{{botium.conversationId}}}"
+              "session_id": "{{botium.conversationId}}"
             },
             "content": {
               "type": "text",
-              "text": "{{{msg.messageText}}}",
-              "message_id":  "{{{botium.stepId}}}",
+              "text": "{{#jsonStringify}}{{{msg.messageText}}}{{/jsonStringify}}",
+              "message_id": "{{botium.stepId}}",
               "attachments": [
               ]
             },
@@ -134,6 +134,7 @@ class BotiumConnectorHolmes {
               image: imageBlocks && imageBlocks.length > 0 && mapImage(imageBlocks[0]),
               buttons: ((a.actions && a.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || []),
               media: imageBlocks && imageBlocks.length > 1 && imageBlocks.slice(1).map(i => mapImage(i))
+              // sourceData: { contentType: 'application/vnd.microsoft.card.adaptive', content: a }
             }]
 
             if (a.actions) {
@@ -223,8 +224,11 @@ class BotiumConnectorHolmes {
     return this.delegateContainer.Build()
   }
 
-  Start () {
-    return this.delegateContainer.Start()
+  async Start () {
+    await this.delegateContainer.Start()
+    this.delegateContainer.view.jsonStringify = () => (val, render) => {
+      return render(val).replace(/"/g, '\\"')
+    }
   }
 
   UserSays (msg) {
