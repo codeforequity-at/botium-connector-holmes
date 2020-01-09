@@ -118,7 +118,7 @@ class BotiumConnectorHolmes {
           const mapCard = (c) => ({
             text: c.title,
             content: c.content || c.description,
-            media: c.image_url ? mapMedia(c.image_url) : null,
+            media: c.image_url ? [ mapMedia(c.image_url) ] : null,
             buttons: c.button ? [mapButton(c.button)] : null
           })
 
