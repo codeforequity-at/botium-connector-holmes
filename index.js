@@ -102,7 +102,7 @@ class BotiumConnectorHolmes {
 
           const mapButton = (b) => ({
             text: _.isString(b) ? b : b.title || b.text || b.label,
-            payload: !_.isString(b) ? JSON.stringify(b.value || b.url || b.data) : null,
+            payload: !_.isString(b) ? (b.value || b.url || b.data) : null,
             imageUri: !_.isString(b) ? (b.image || b.iconUrl) : null
           })
           const mapImage = (i) => ({
