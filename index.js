@@ -133,8 +133,8 @@ class BotiumConnectorHolmes {
               content: ((textBlocks && textBlocks.map(t => t.text)) || []).concat((choiceBlocks && choiceBlocks.reduce((agg, cb) => agg.concat(cb.choices.map(c => c.title)), [])) || []),
               image: imageBlocks && imageBlocks.length > 0 && mapImage(imageBlocks[0]),
               buttons: ((a.actions && a.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || []),
-              media: imageBlocks && imageBlocks.length > 1 && imageBlocks.slice(1).map(i => mapImage(i))
-              // sourceData: { contentType: 'application/vnd.microsoft.card.adaptive', content: a }
+              media: imageBlocks && imageBlocks.length > 1 && imageBlocks.slice(1).map(i => mapImage(i)),
+              sourceData: { contentType: 'application/vnd.microsoft.card.adaptive', content: a }
             }]
 
             if (a.actions) {
@@ -166,7 +166,7 @@ class BotiumConnectorHolmes {
                   })
                 }
               }
-              if (attachment.type === 'AdaptiveCard') {
+              if (attachment.type === 'AdaptiveCard' || attachment.type === 'AdaptiveCards') {
                 botMsg.cards = botMsg.cards.concat(mapAdaptiveCard(attachment.data[0].content))
               }
               if (attachment.type === 'carousel') {
