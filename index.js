@@ -1,5 +1,5 @@
 const util = require('util')
-const url = require('url')
+// const url = require('url')
 const mime = require('mime-types')
 const _ = require('lodash')
 const debug = require('debug')('botium-connector-holmes')
@@ -33,12 +33,12 @@ class BotiumConnectorHolmes {
     Object.assign(this.caps, Defaults)
 
     if (!this.caps[Capabilities.HOLMES_URL]) throw new Error('HOLMES_URL capability required')
-    const holmesURL = new url.URL(this.caps[Capabilities.HOLMES_URL])
+    // const holmesURL = new url.URL(this.caps[Capabilities.HOLMES_URL])
 
     if (!this.delegateContainer) {
       this.delegateCaps = {
         [CoreCapabilities.SIMPLEREST_URL]: this.caps[Capabilities.HOLMES_URL],
-        [CoreCapabilities.SIMPLEREST_PING_URL]: `${holmesURL.protocol}//${holmesURL.host}`,
+        // [CoreCapabilities.SIMPLEREST_PING_URL]: `${holmesURL.protocol}//${holmesURL.host}`,
         [CoreCapabilities.SIMPLEREST_METHOD]: 'POST',
         [CoreCapabilities.SIMPLEREST_CONVERSATION_ID_TEMPLATE]: '{{#fnc.random}}7{{/fnc.random}}',
         [CoreCapabilities.SIMPLEREST_STEP_ID_TEMPLATE]: '{{#fnc.random}}5{{/fnc.random}}',
@@ -126,23 +126,29 @@ class BotiumConnectorHolmes {
             const textBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'TextBlock')
             const imageBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'Image')
             const buttonBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type.startsWith('Action.'))
-            const choiceBlocks = this._deepFilter(a.body, (t) => t.type, (t) => t.type === 'Input.ChoiceSet')
+            const actions = (a.actions || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || [])
+            const subcards = actions.filter(action => (action.type === 'Action.ShowCard' && action.card)).map(action => mapAdaptiveCard(action.card, action.title))
+            const inputs = this._deepFilter(a.body, (t) => t.type, (t) => t.type.startsWith('Input.'))
+            const forms = []
+            for (const input of inputs) {
+              forms.push({
+                name: input.id,
+                label: input.label,
+                type: input.type.substring('Input.'.length),
+                options: input.choices
+              })
+            }
 
-            let cards = [{
-              text: title,
-              content: ((textBlocks && textBlocks.map(t => t.text)) || []).concat((choiceBlocks && choiceBlocks.reduce((agg, cb) => agg.concat(cb.choices.map(c => c.title)), [])) || []),
+            const cards = [{
+              text: title || '',
+              content: textBlocks && textBlocks.map(t => t.text),
               image: imageBlocks && imageBlocks.length > 0 && mapImage(imageBlocks[0]),
-              buttons: ((a.actions && a.actions.map(mapButton)) || []).concat((buttonBlocks && buttonBlocks.map(mapButton)) || []),
+              buttons: actions.map(mapButton),
               media: imageBlocks && imageBlocks.length > 1 && imageBlocks.slice(1).map(i => mapImage(i)),
+              forms: forms.length ? forms : null,
+              cards: subcards.length ? subcards : null,
               sourceData: { contentType: 'application/vnd.microsoft.card.adaptive', content: a }
             }]
-
-            if (a.actions) {
-              const bCards = a.actions.filter(a => a.type === 'Action.ShowCard' && a.card)
-              for (const bCard of bCards) {
-                cards = cards.concat(mapAdaptiveCard(bCard.card, bCard.title))
-              }
-            }
             return cards
           }
 
@@ -190,10 +196,26 @@ class BotiumConnectorHolmes {
                   }
                 }
               }
+              if (attachment.type === 'feedback') {
+                botMsg.cards.push({
+                  text: 'Let us know your Feedback',
+                  content: '',
+                  buttons: [
+                    { text: 'Skip', payload: 'skip' },
+                    { text: 'Submit', payload: 'submit' }
+                  ]
+                })
+              }
             }
           }
-        }
+        },
+        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_JSONPATH]: '$.body.sepp',
+        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_VALUE]: 'test'
       }
+      for (const capKey of Object.keys(this.caps).filter(c => c.startsWith('SIMPLEREST'))) {
+        if (!this.delegateCaps[capKey]) this.delegateCaps[capKey] = this.caps[capKey]
+      }
+
       debug(`Validate delegateCaps ${util.inspect(this.delegateCaps)}`)
       this.delegateContainer = new SimpleRestContainer({ queueBotSays: this.queueBotSays, caps: this.delegateCaps })
     }
