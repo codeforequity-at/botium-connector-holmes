@@ -65,7 +65,7 @@ class BotiumConnectorHolmes {
           }`,
         [CoreCapabilities.SIMPLEREST_REQUEST_HOOK]: ({ requestOptions, msg, context }) => {
           const buttonPayload = msg.buttons && msg.buttons.length > 0 && (msg.buttons[0].payload || msg.buttons[0].text)
-          
+
           if (msg.forms && msg.forms.length > 0) {
             debug(`Found forms payload, adding to text (${JSON.stringify(msg.forms)})`)
             const content = {}
@@ -75,7 +75,7 @@ class BotiumConnectorHolmes {
             }
             for (const f of msg.forms) {
               content[f.name] = f.value
-            }          
+            }
             requestOptions.body.content.text = JSON.stringify(content)
           } else if (buttonPayload) {
             debug(`Found button payload, adding to text (${JSON.stringify(buttonPayload)})`)
@@ -213,32 +213,32 @@ class BotiumConnectorHolmes {
                 botMsg.cards = botMsg.cards.concat(mapAdaptiveCard({
                   body: [
                     {
-                      type: "TextBlock",
-                      text: "Let us know your Feedback"
+                      type: 'TextBlock',
+                      text: 'Let us know your Feedback'
                     },
                     {
-                      "type": "Input.ChoiceSet",
-                      "id": "text",
-                      "choices": [
+                      type: 'Input.ChoiceSet',
+                      id: 'text',
+                      choices: [
                         { title: 'Love it', value: 'Love it' },
                         { title: 'Medium', value: 'Medium' },
                         { title: 'Hate it', value: 'Hate it' }
                       ]
                     },
                     {
-                      "type": "TextBlock",
-                      "text": "Comment"
+                      type: 'TextBlock',
+                      text: 'Comment'
                     },
                     {
-                      "type": "Input.Text",
-                      "id": "comment",
-                      "maxLength": 500
-                    },                    
+                      type: 'Input.Text',
+                      id: 'comment',
+                      maxLength: 500
+                    }
                   ],
-                  "actions": [
+                  actions: [
                     {
-                      "type": "Action.Submit",
-                      "title": "OK"
+                      type: 'Action.Submit',
+                      title: 'OK'
                     }
                   ]
                 }))
