@@ -64,23 +64,30 @@ class BotiumConnectorHolmes {
             }           
           }`,
         [CoreCapabilities.SIMPLEREST_REQUEST_HOOK]: ({ requestOptions, msg, context }) => {
-          if (msg.buttons && msg.buttons.length > 0) {
-            const payload = msg.buttons[0].payload || msg.buttons[0].text
-            if (_.isObject(payload)) {
-              requestOptions.body.content.text = JSON.stringify(payload)
-            } else {
-              requestOptions.body.content.text = payload
-            }
-          } else if (msg.forms && msg.forms.length > 0) {
+          const buttonPayload = msg.buttons && msg.buttons.length > 0 && (msg.buttons[0].payload || msg.buttons[0].text)
+          
+          if (msg.forms && msg.forms.length > 0) {
+            debug(`Found forms payload, adding to text (${JSON.stringify(msg.forms)})`)
             const content = {}
+            if (buttonPayload) {
+              if (_.isObject(buttonPayload)) Object.assign(content, buttonPayload)
+              else content.text = buttonPayload
+            }
             for (const f of msg.forms) {
               content[f.name] = f.value
-            }
+            }          
             requestOptions.body.content.text = JSON.stringify(content)
+          } else if (buttonPayload) {
+            debug(`Found button payload, adding to text (${JSON.stringify(buttonPayload)})`)
+            if (_.isObject(buttonPayload)) {
+              requestOptions.body.content.text = JSON.stringify(buttonPayload)
+            } else {
+              requestOptions.body.content.text = buttonPayload
+            }
           }
           debug(`Request Body: ${JSON.stringify(requestOptions.body)}`)
         },
-        [CoreCapabilities.SIMPLEREST_RESPONSE_JSONPATH]: '$.text',
+        [CoreCapabilities.SIMPLEREST_RESPONSE_JSONPATH]: ['$.text', '$.message'],
         [CoreCapabilities.SIMPLEREST_RESPONSE_HOOK]: ({ botMsg }) => {
           debug(`Response Body: ${JSON.stringify(botMsg.sourceData)}`)
 
@@ -173,7 +180,13 @@ class BotiumConnectorHolmes {
                 }
               }
               if (attachment.type === 'AdaptiveCard' || attachment.type === 'AdaptiveCards') {
-                botMsg.cards = botMsg.cards.concat(mapAdaptiveCard(attachment.data[0].content))
+                if (attachment.data && attachment.data.length > 0) {
+                  for (const d of attachment.data) {
+                    if (d.contentType === 'application/vnd.microsoft.card.adaptive') {
+                      botMsg.cards = botMsg.cards.concat(mapAdaptiveCard(d.content))
+                    }
+                  }
+                }
               }
               if (attachment.type === 'carousel') {
                 if (attachment.data && attachment.data.length > 0) {
@@ -197,20 +210,44 @@ class BotiumConnectorHolmes {
                 }
               }
               if (attachment.type === 'feedback') {
-                botMsg.cards.push({
-                  text: 'Let us know your Feedback',
-                  content: '',
-                  buttons: [
-                    { text: 'Skip', payload: 'skip' },
-                    { text: 'Submit', payload: 'submit' }
+                botMsg.cards = botMsg.cards.concat(mapAdaptiveCard({
+                  body: [
+                    {
+                      type: "TextBlock",
+                      text: "Let us know your Feedback"
+                    },
+                    {
+                      "type": "Input.ChoiceSet",
+                      "id": "text",
+                      "choices": [
+                        { title: 'Love it', value: 'Love it' },
+                        { title: 'Medium', value: 'Medium' },
+                        { title: 'Hate it', value: 'Hate it' }
+                      ]
+                    },
+                    {
+                      "type": "TextBlock",
+                      "text": "Comment"
+                    },
+                    {
+                      "type": "Input.Text",
+                      "id": "comment",
+                      "maxLength": 500
+                    },                    
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.Submit",
+                      "title": "OK"
+                    }
                   ]
-                })
+                }))
               }
             }
           }
         },
-        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_JSONPATH]: '$.body.sepp',
-        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_VALUE]: 'test'
+        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_JSONPATH]: '$.body.sessionId',
+        [CoreCapabilities.SIMPLEREST_INBOUND_SELECTOR_VALUE]: '{{botium.conversationId}}'
       }
       for (const capKey of Object.keys(this.caps).filter(c => c.startsWith('SIMPLEREST'))) {
         if (!this.delegateCaps[capKey]) this.delegateCaps[capKey] = this.caps[capKey]
