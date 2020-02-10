@@ -66,7 +66,15 @@ class BotiumConnectorHolmes {
         [CoreCapabilities.SIMPLEREST_REQUEST_HOOK]: ({ requestOptions, msg, context }) => {
           const buttonPayload = msg.buttons && msg.buttons.length > 0 && (msg.buttons[0].payload || msg.buttons[0].text)
 
-          if (msg.forms && msg.forms.length > 0) {
+          // Special handling for Feedback forms
+          if (msg.forms && msg.forms.length > 0 && msg.forms.findIndex(f => f.name === 'submitFeedback' && f.value) >= 0) {
+            requestOptions.body.vars = requestOptions.body.vars || {}
+            requestOptions.body.vars.feedback = {
+              msg: (msg.forms.find(f => f.name === 'msg') || { value: '' }).value,
+              comment: (msg.forms.find(f => f.name === 'comment') || { value: '' }).value
+            }
+            requestOptions.body.content.text = requestOptions.body.vars.feedback.msg
+          } else if (msg.forms && msg.forms.length > 0 && msg.forms.findIndex(f => f.name === 'skipForm' && f.value) < 0) {
             debug(`Found forms payload, adding to text (${JSON.stringify(msg.forms)})`)
             const content = {}
             if (buttonPayload) {
@@ -218,9 +226,9 @@ class BotiumConnectorHolmes {
                     },
                     {
                       type: 'Input.ChoiceSet',
-                      id: 'text',
+                      id: 'msg',
                       choices: [
-                        { title: 'Love it', value: 'Love it' },
+                        { title: 'Like it', value: 'Like it' },
                         { title: 'Medium', value: 'Medium' },
                         { title: 'Hate it', value: 'Hate it' }
                       ]
@@ -238,7 +246,17 @@ class BotiumConnectorHolmes {
                   actions: [
                     {
                       type: 'Action.Submit',
-                      title: 'OK'
+                      title: 'Submit',
+                      data: {
+                        submitFeedback: true
+                      }
+                    },
+                    {
+                      type: 'Action.Submit',
+                      title: 'Skip',
+                      data: {
+                        skipForm: true
+                      }
                     }
                   ]
                 }))
