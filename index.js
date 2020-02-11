@@ -227,10 +227,12 @@ class BotiumConnectorHolmes {
                     {
                       type: 'Input.ChoiceSet',
                       id: 'msg',
+                      style: 'expanded',
+                      isMultiSelect: false,
                       choices: [
-                        { title: 'Like it', value: 'Like it' },
-                        { title: 'Medium', value: 'Medium' },
-                        { title: 'Hate it', value: 'Hate it' }
+                        { title: 'Love It! 😍', value: 'Love it' },
+                        { title: 'Like It! 😃', value: 'Like It' },
+                        { title: 'Dislike It! 🙁', value: 'Dislike it' }
                       ]
                     },
                     {
