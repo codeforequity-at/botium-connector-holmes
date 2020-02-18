@@ -12,11 +12,13 @@ const Capabilities = {
   HOLMES_SERVICE_URL: 'HOLMES_SERVICE_URL',
   HOLMES_USER: 'HOLMES_USER',
   HOLMES_USER_ID: 'HOLMES_USER_ID',
-  HOLMES_CHANNEL: 'HOLMES_CHANNEL'
+  HOLMES_CHANNEL: 'HOLMES_CHANNEL',
+  HOLMES_VARS: 'HOLMES_VARS'
 }
 
 const Defaults = {
-  [Capabilities.HOLMES_CHANNEL]: { id: '1', type: 'web', lang: 'en' }
+  [Capabilities.HOLMES_CHANNEL]: { id: '1', type: 'web', lang: 'en' },
+  [Capabilities.HOLMES_VARS]: {}
 }
 
 class BotiumConnectorHolmes {
@@ -30,7 +32,7 @@ class BotiumConnectorHolmes {
   Validate () {
     debug('Validate called')
 
-    Object.assign(this.caps, Defaults)
+    this.caps = Object.assign({}, Defaults, this.caps)
 
     if (!this.caps[Capabilities.HOLMES_URL]) throw new Error('HOLMES_URL capability required')
     // const holmesURL = new url.URL(this.caps[Capabilities.HOLMES_URL])
@@ -60,8 +62,7 @@ class BotiumConnectorHolmes {
               "attachments": [
               ]
             },
-            "vars": {
-            }           
+            "vars": ${_.isString(this.caps[Capabilities.HOLMES_VARS]) ? this.caps[Capabilities.HOLMES_VARS] : JSON.stringify(this.caps[Capabilities.HOLMES_VARS])}
           }`,
         [CoreCapabilities.SIMPLEREST_REQUEST_HOOK]: ({ requestOptions, msg, context }) => {
           const buttonPayload = msg.buttons && msg.buttons.length > 0 && (msg.buttons[0].payload || msg.buttons[0].text)
