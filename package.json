@@ -1,6 +1,6 @@
 {
   "name": "botium-connector-holmes",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Botium Connector for Wipro Holmes",
   "main": "dist/botium-connector-wipro-holmes-cjs.js",
   "module": "dist/botium-connector-wipro-holmes-es.js",
